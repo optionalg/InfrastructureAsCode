@@ -1,0 +1,55 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description": "Template for combining all Scenario 2 Docker Hello World templates into one nested template.",
+  "Parameters": {
+    "VpcURL": {
+      "Type": "String",
+      "Default": "https://s3.amazonaws.com/sfsherwani-s3-170217/vpc.template",
+      "Description": "Template URL for VPC Network."
+    },
+    "DockerURL": {
+      "Type": "String",
+      "Default": "https://s3.amazonaws.com/sfsherwani-s3-170217/docker.template",
+      "Description": "Template URL for Amazon Linux and Docker Hello World."
+    },
+    "s3URL": {
+      "Type": "String",
+      "Default": "https://s3.amazonaws.com/sfsherwani-s3-170217/s3.template",
+      "Description": "Template URL for S3 Bucket."
+    }
+  },
+  "Resources" : {
+    "Vpc" : {
+       "Type" : "AWS::CloudFormation::Stack",
+     	   "Properties" : {
+         "TemplateURL" : { "Ref": "VpcURL" },
+         "Parameters" :
+          {
+            "CIDRRange": "10.250.0.0"
+          }
+	       }
+    },
+    "Mys3Bucket" : {
+       "Type" : "AWS::CloudFormation::Stack",
+         "Properties" : {
+         "TemplateURL" : { "Ref": "s3URL" }
+       }
+    },
+    "DockerApp" : {
+       "Type" : "AWS::CloudFormation::Stack",
+         "DependsOn" : "Vpc",         
+         "Properties" : {
+         "TemplateURL" : { "Ref": "DockerURL" },
+         "Parameters" :
+          {
+            "VPCID"               : {"Fn::GetAtt": ["Vpc", "Outputs.VPCID"]},
+            "PrivateSubnets"      : {"Fn::Join": [",", [{"Fn::GetAtt": ["Vpc", "Outputs.SubnetPrivateAZ1"]}, {"Fn::GetAtt": ["Vpc", "Outputs.SubnetPrivateAZ2"]}]]},
+            "ELBSubnet"           : {"Fn::Join": [",", [{"Fn::GetAtt": ["Vpc", "Outputs.SubnetPublicAZ1"]}, {"Fn::GetAtt": ["Vpc", "Outputs.SubnetPublicAZ2"]}]]}
+          }
+       }
+    }
+  },
+  "Outputs": {
+    "DockerURL"  : { "Value": {"Fn::GetAtt": ["DockerApp", "Outputs.WebsiteURL"]}}
+  }
+}
