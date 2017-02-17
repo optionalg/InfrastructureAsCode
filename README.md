@@ -6,3 +6,6 @@ Running the following command from a machine properly configured with the AWS cl
 ```json
 aws cloudformation create-stack --stack-name sfsherwani-helloworld --template-url https://s3.amazonaws.com/sfsherwani-s3-170217/nested.template
 ```
+The VPC infrastructure that is created can be viewed in the following image.
+
+![alt text](InfrastructureAsCode/VPC_diagram.png "VPC Diagram")
